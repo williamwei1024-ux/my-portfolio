@@ -106,14 +106,14 @@
       if (hideTimer) clearTimeout(hideTimer);
       showTimer = setTimeout(function() {
         floatPanel.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
-      }, 500);
+      }, 1000);
     }
 
     function hidePanel() {
       if (showTimer) clearTimeout(showTimer);
       hideTimer = setTimeout(function() {
         floatPanel.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
-      }, 500);
+      }, 1000);
     }
 
     floatDot.addEventListener('mouseenter', showPanel);

@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "compress": "node scripts/compress-images.mjs",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +20,8 @@
     "tailwindcss": "^3.4.0"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "sharp": "^0.34.5"
   }
 }

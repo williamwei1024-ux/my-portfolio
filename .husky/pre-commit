@@ -1,0 +1,29 @@
+#!/bin/sh
+# Pre-commit hook: compress staged images before commit
+
+# Get list of staged image files
+STAGED_IMAGES=$(git diff --staged --name-only --diff-filter=ACM | grep -E '\.(jpg|jpeg|png|webp)$' -i || true)
+
+if [ -z "$STAGED_IMAGES" ]; then
+  echo "No images to compress."
+  exit 0
+fi
+
+echo "🖼️  Compressing staged images..."
+
+# Compress each image
+echo "$STAGED_IMAGES" | while read -r img; do
+  if [ -f "$img" ]; then
+    SIZE=$(stat -f%z "$img" 2>/dev/null || stat -c%s "$img" 2>/dev/null)
+    if [ "$SIZE" -gt 5242880 ]; then  # 5MB
+      echo "  Compressing: $img"
+      node scripts/compress-images.mjs --single="$img"
+    fi
+  fi
+done
+
+# Re-add compressed images to staging
+git add --update .
+echo "✅ Images compressed and re-staged."
+
+exit 0

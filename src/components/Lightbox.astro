@@ -5,7 +5,7 @@
 ---
 
 <!-- Level 1: Series Modal -->
-<div id="series-modal" class="fixed inset-0 z-40 hidden bg-white dark:bg-neutral-950 transition-opacity duration-300 opacity-0 pointer-events-none">
+<div id="series-modal" class="fixed inset-0 z-50 hidden bg-white dark:bg-neutral-950 transition-opacity duration-300 opacity-0 pointer-events-none">
   <button id="series-modal-close" class="fixed top-4 right-4 z-50 p-3 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
   </button>
@@ -18,26 +18,29 @@
 
 <!-- Level 2: Photo Lightbox -->
 <div id="photo-lightbox" class="fixed inset-0 z-50 hidden bg-black transition-opacity duration-300 opacity-0 pointer-events-none">
-  <button id="photo-lb-close" class="fixed top-4 right-4 z-50 text-white/70 hover:text-white p-3">
+  <button id="photo-lb-close" class="fixed top-4 right-4 z-[60] text-white bg-black/60 hover:bg-black/80 p-3 rounded-lg backdrop-blur-sm transition-colors">
     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
   </button>
-  <div class="fixed top-4 left-4 z-50 text-white">
+  <div class="fixed top-4 left-4 z-[60] text-white">
     <p id="photo-lb-title" class="subheading opacity-70"></p>
     <p id="photo-lb-counter" class="mt-1"></p>
   </div>
-  <div class="fixed inset-16 flex items-center justify-center">
-    <img id="photo-lb-img" class="max-w-full max-h-full object-contain" />
+  <div class="fixed inset-16 flex items-center justify-center overflow-hidden">
+    <img id="photo-lb-img" class="max-w-full max-h-full object-contain transition-transform duration-300 ease-in-out" />
   </div>
-  <button id="photo-lb-prev" class="fixed left-4 top-1/2 -translate-y-1/2 z-50 text-white/50 hover:text-white p-2">
+  <button id="photo-lb-prev" class="fixed left-4 top-1/2 -translate-y-1/2 z-[60] text-white bg-black/40 hover:bg-black/60 p-2 rounded-lg backdrop-blur-sm transition-colors">
     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 19l-7-7 7-7" /></svg>
   </button>
-  <button id="photo-lb-next" class="fixed right-4 top-1/2 -translate-y-1/2 z-50 text-white/50 hover:text-white p-2">
+  <button id="photo-lb-next" class="fixed right-4 top-1/2 -translate-y-1/2 z-[60] text-white bg-black/40 hover:bg-black/60 p-2 rounded-lg backdrop-blur-sm transition-colors">
     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5l7 7-7 7" /></svg>
   </button>
-  <div class="fixed bottom-6 right-6 z-50 flex gap-3">
-    <button id="photo-lb-zoom-out" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg></button>
-    <button id="photo-lb-zoom-in" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" /></svg></button>
-    <button id="photo-lb-fit" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg></button>
+  <div class="fixed bottom-6 right-6 z-[60] flex items-center gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg">
+    <button id="photo-lb-zoom-out" class="text-white hover:text-white p-2 rounded hover:bg-white/20 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg></button>
+    <button id="photo-lb-zoom-in" class="text-white hover:text-white p-2 rounded hover:bg-white/20 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" /></svg></button>
+    <button id="photo-lb-fit" class="text-white hover:text-white p-2 rounded hover:bg-white/20 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg></button>
+    <div class="w-px h-6 bg-white/30"></div>
+    <button id="photo-lb-rotate-left" class="text-white hover:text-white p-2 rounded hover:bg-white/20 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+    <button id="photo-lb-rotate-right" class="text-white hover:text-white p-2 rounded hover:bg-white/20 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 4v5h-.582m-15.356 2a8.001 8.001 0 0115.356-2M20 20v-5h.582m0 0a8.003 8.003 0 01-15.357-2M15 19l-7 7m0 0l7-7m-7 7h18" /></svg></button>
   </div>
 </div>
 
@@ -58,10 +61,13 @@
   const photoLbZoomIn = document.getElementById('photo-lb-zoom-in');
   const photoLbZoomOut = document.getElementById('photo-lb-zoom-out');
   const photoLbFit = document.getElementById('photo-lb-fit');
+  const photoLbRotateLeft = document.getElementById('photo-lb-rotate-left');
+  const photoLbRotateRight = document.getElementById('photo-lb-rotate-right');
 
   let currentSeriesImages: string[] = [];
   let currentImageIndex = 0;
   let zoom = 1;
+  let rotation = 0;
 
   // Open Series Modal (Level 1)
   function openSeriesModal(photos: string[], name: string) {
@@ -97,6 +103,7 @@
   function openPhotoLightbox(index: number) {
     currentImageIndex = index;
     zoom = 1;
+    rotation = 0;
     updatePhotoLightbox();
     photoLightbox.classList.remove('hidden');
     requestAnimationFrame(() => {
@@ -113,7 +120,7 @@
 
   function updatePhotoLightbox() {
     photoLbImg.src = currentSeriesImages[currentImageIndex];
-    photoLbImg.style.transform = `scale(${zoom})`;
+    photoLbImg.style.transform = `scale(${zoom}) rotate(${rotation}deg)`;
     photoLbCounter.textContent = `${currentImageIndex + 1} / ${currentSeriesImages.length}`;
     photoLbTitle.textContent = seriesModalTitle.textContent;
   }
@@ -121,12 +128,14 @@
   function nextImage() {
     currentImageIndex = (currentImageIndex + 1) % currentSeriesImages.length;
     zoom = 1;
+    rotation = 0;
     updatePhotoLightbox();
   }
 
   function prevImage() {
     currentImageIndex = (currentImageIndex - 1 + currentSeriesImages.length) % currentSeriesImages.length;
     zoom = 1;
+    rotation = 0;
     updatePhotoLightbox();
   }
 
@@ -145,7 +154,9 @@
 
     photoLbZoomIn.onclick = () => { zoom = Math.min(zoom * 1.5, 4); updatePhotoLightbox(); };
     photoLbZoomOut.onclick = () => { zoom = Math.max(zoom / 1.5, 0.5); updatePhotoLightbox(); };
-    photoLbFit.onclick = () => { zoom = 1; updatePhotoLightbox(); };
+    photoLbFit.onclick = () => { zoom = 1; rotation = 0; updatePhotoLightbox(); };
+    photoLbRotateLeft.onclick = () => { rotation = (rotation - 90) % 360; updatePhotoLightbox(); };
+    photoLbRotateRight.onclick = () => { rotation = (rotation + 90) % 360; updatePhotoLightbox(); };
 
     document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (!photoLightbox.classList.contains('hidden')) {

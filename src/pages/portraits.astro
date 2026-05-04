@@ -1,0 +1,354 @@
+---
+// portraits.astro - 两级 Lightbox: 系列封面 → 瀑布流 → 单图灯箱
+import Layout from '../layouts/Layout.astro';
+
+// 自动读取 src/assets/portraits/ 下所有子文件夹，每个文件夹为一个系列
+const portraitsGlob = import.meta.glob('/src/assets/portraits/**/*.{jpg,JPG,jpeg,JPEG,png,PNG,webp,WEBP,avif,AVIF}', { eager: true });
+
+// 按子文件夹分组
+const seriesMap = new Map<string, any[]>();
+Object.entries(portraitsGlob)
+  .filter(([path]) => !path.includes('.DS_Store') && !path.startsWith('.'))
+  .forEach(([path, image]: [string, any]) => {
+    const parts = path.split('/');
+    const seriesName = parts.length >= 4 ? parts[parts.length - 2] : 'Untitled';
+    if (!seriesMap.has(seriesName)) seriesMap.set(seriesName, []);
+    seriesMap.get(seriesName)!.push(image);
+  });
+
+const seriesList = Array.from(seriesMap.entries())
+  .map(([name, photos]) => {
+    const cover = photos[0].default;
+    const orientation = cover.width > cover.height ? 'landscape' : 'portrait';
+    return { name, coverSrc: cover.src, orientation, photos: photos.map(p => p.default.src) };
+  })
+  .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+
+// 随机选一张Hero图片
+const allHeroImages = Array.from(seriesMap.values()).flat().map(p => p.default.src);
+const randomHeroSrc = allHeroImages[Math.floor(Math.random() * allHeroImages.length)];
+---
+
+<Layout title="Portraits | LIYUAN WEI">
+  <!-- Hero -->
+  <section class="min-h-screen flex flex-col lg:flex-row items-center justify-center px-6 lg:px-20 pt-20">
+    <div class="lg:w-1/2 flex flex-col justify-center">
+      <p class="subheading mb-4 text-neutral-400">LIYUAN WEI</p>
+      <h1 class="font-display text-4xl md:text-6xl lg:text-7xl font-medium leading-[0.9] mb-8 text-white">PORTRAITS</h1>
+      <p class="text-lg md:text-xl text-neutral-400 max-w-sm font-light leading-relaxed">
+        Capturing light and emotion
+      </p>
+    </div>
+    <div class="lg:w-1/2 mt-12 lg:mt-0 lg:pl-24">
+      <!-- Glassmorphism Square Container -->
+      <div class="relative w-80 sm:w-96 md:w-96 lg:w-[28rem] xl:w-[32rem] aspect-square overflow-hidden bg-transparent">
+        <!-- Layer 1: Blurred Background -->
+        <img
+          src={randomHeroSrc}
+          alt=""
+          class="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60"
+          loading="eager"
+          fetchpriority="high"
+        />
+        <!-- Layer 2: Dark Overlay -->
+        <div class="absolute inset-0 bg-black/10"></div>
+        <!-- Layer 3: Main Photo -->
+        <img
+          src={randomHeroSrc}
+          alt="Portrait"
+          class="relative z-10 w-full h-full object-contain"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Series Grid -->
+  <section id="works" class="px-4 md:px-8 lg:px-20 py-24 lg:py-40">
+    <div class="mb-16 lg:mb-24">
+      <p class="subheading text-neutral-400 mb-2">Selected Works</p>
+      <h2 class="font-display text-4xl md:text-5xl text-white">Portrait Series</h2>
+    </div>
+
+    <!-- Sorting & Search Bar -->
+    <div class="flex justify-between items-center w-full py-4 mb-8 border-b border-white/10">
+      <div class="flex gap-6">
+        <button class="grid-sort-btn text-[10px] tracking-[0.2em] uppercase text-neutral-400 hover:text-white transition-colors" data-sort="az">A-Z</button>
+        <button class="grid-sort-btn text-[10px] tracking-[0.2em] uppercase text-neutral-400 hover:text-white transition-colors" data-sort="za">Z-A</button>
+        <button class="grid-sort-btn text-[10px] tracking-[0.2em] uppercase text-neutral-400 hover:text-white transition-colors" data-sort="random">RANDOM</button>
+      </div>
+      <input type="text" id="series-search" placeholder="SEARCH" class="bg-transparent border-0 border-b border-gray-600 focus:border-white text-white placeholder-gray-600 outline-none focus:ring-0 w-24 focus:w-48 transition-all duration-500 text-[10px] tracking-[0.2em]" />
+    </div>
+
+    <div class="columns-1 sm:columns-2 lg:columns-3 gap-4 md:gap-6">
+      {seriesList.map((s, idx) => (
+        <article class="series-card cursor-pointer group relative break-inside-avoid mb-4 md:mb-6" data-name={s.name} data-orientation={s.orientation}>
+          <div class="cover-wrap bg-neutral-800 overflow-hidden relative">
+            <img src={s.coverSrc} alt={s.name} class="w-full h-auto object-cover" />
+            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all flex items-center justify-center">
+              <div class="opacity-0 group-hover:opacity-100 text-center">
+                <p class="subheading text-white/80">{s.photos.length} photos</p>
+                <p class="font-display text-2xl text-white mt-1">{s.name}</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- Level 1: Series Modal (白底瀑布流) -->
+  <div id="series-modal" class="fixed inset-0 z-40 hidden bg-white dark:bg-neutral-950 transition-opacity duration-300 opacity-0 pointer-events-none">
+    <div class="pt-24 pb-8 px-4 md:px-8 overflow-auto h-full">
+      <h2 id="series-modal-title" class="font-display text-3xl mb-2 text-neutral-900 dark:text-white"></h2>
+      <p id="series-modal-count" class="subheading text-neutral-500 mb-4"></p>
+
+      <div id="series-photos-grid" class="columns-1 sm:columns-2 lg:columns-3 gap-4"></div>
+    </div>
+  </div>
+
+  <!-- Level 2: Photo Lightbox (黑底沉浸式) -->
+  <div id="photo-lightbox" class="fixed inset-0 z-50 hidden bg-black transition-opacity duration-300 opacity-0 pointer-events-none">
+    <div class="fixed top-4 left-4 z-50 text-white">
+      <p id="photo-lb-title" class="subheading opacity-70"></p>
+      <p id="photo-lb-counter" class="mt-1"></p>
+    </div>
+    <div class="fixed inset-16 flex items-center justify-center">
+      <img id="photo-lb-img" class="max-w-full max-h-full object-contain" />
+    </div>
+    <!-- Photo metadata -->
+    <div class="fixed bottom-6 left-6 z-50">
+    </div>
+    <button id="photo-lb-prev" class="fixed left-4 top-1/2 -translate-y-1/2 z-50 text-white/50 hover:text-white p-2">
+      <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 19l-7-7 7-7" /></svg>
+    </button>
+    <button id="photo-lb-next" class="fixed right-4 top-1/2 -translate-y-1/2 z-50 text-white/50 hover:text-white p-2">
+      <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5l7 7-7 7" /></svg>
+    </button>
+    <div class="fixed bottom-6 right-6 z-50 flex gap-3">
+      <button id="photo-lb-zoom-out" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg></button>
+      <button id="photo-lb-zoom-in" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" /></svg></button>
+      <button id="photo-lb-fit" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg></button>
+    </div>
+  </div>
+
+  <!-- Navigation Links -->
+  <div class="mt-24 flex gap-8 justify-center">
+    <a href="/landscapes" class="subheading text-neutral-500 hover:text-white transition-colors">Landscapes</a>
+    <a href="/street" class="subheading text-neutral-500 hover:text-white transition-colors">Street</a>
+  </div>
+
+  <!-- Footer -->
+  <footer class="px-6 lg:px-20 py-16 border-t border-neutral-800">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+      <p class="subheading text-neutral-500">&copy; 2026 LIYUAN WEI</p>
+      <div class="flex gap-8">
+        <a href="#" class="subheading text-neutral-500 hover:text-white transition-colors">Instagram</a>
+        <a href="#" class="subheading text-neutral-500 hover:text-white transition-colors">Email</a>
+      </div>
+    </div>
+  </footer>
+</Layout>
+
+<script define:vars={{ seriesList }}>
+  // 系列数据
+  const allSeries = seriesList || [];
+
+  // DOM 元素
+  const seriesCards = document.querySelectorAll('.series-card');
+  const seriesModal = document.getElementById('series-modal');
+  const seriesModalTitle = document.getElementById('series-modal-title');
+  const seriesModalCount = document.getElementById('series-modal-count');
+  const seriesPhotosGrid = document.getElementById('series-photos-grid');
+  const photoLightbox = document.getElementById('photo-lightbox');
+  const photoLbImg = document.getElementById('photo-lb-img');
+  const photoLbCounter = document.getElementById('photo-lb-counter');
+  const photoLbTitle = document.getElementById('photo-lb-title');
+  const photoLbPrev = document.getElementById('photo-lb-prev');
+  const photoLbNext = document.getElementById('photo-lb-next');
+  const photoLbZoomIn = document.getElementById('photo-lb-zoom-in');
+  const photoLbZoomOut = document.getElementById('photo-lb-zoom-out');
+  const photoLbFit = document.getElementById('photo-lb-fit');
+
+  let currentSeriesImages = [];
+  let currentImageIndex = 0;
+  let zoom = 1;
+
+  // 打开系列弹窗 (Level 1)
+  function openSeriesModal(name) {
+    const series = allSeries.find(s => s.name === name);
+    if (!series || !series.photos) return;
+
+    currentSeriesImages = series.photos;
+    seriesModalTitle.textContent = series.name;
+    seriesModalCount.textContent = currentSeriesImages.length + ' 张照片';
+
+    // 瀑布流布局
+    seriesPhotosGrid.innerHTML = '';
+    currentSeriesImages.forEach((src, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'photo-item break-inside-avoid mb-4 cursor-pointer';
+      wrap.dataset.name = src.split('/').pop();
+      wrap.innerHTML = `<img src="${src}" class="w-full h-auto object-contain" loading="lazy" />`;
+      wrap.onclick = () => openPhotoLightbox(i);
+      seriesPhotosGrid.appendChild(wrap);
+    });
+
+    seriesModal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      seriesModal.classList.remove('opacity-0', 'pointer-events-none');
+    });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSeriesModal() {
+    seriesModal.classList.add('opacity-0', 'pointer-events-none');
+    setTimeout(() => seriesModal.classList.add('hidden'), 300);
+    document.body.style.overflow = '';
+  }
+
+  // 打开单图灯箱 (Level 2)
+  function openPhotoLightbox(index) {
+    currentImageIndex = index;
+    zoom = 1;
+    updatePhotoLightbox();
+    photoLightbox.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      photoLightbox.classList.remove('opacity-0', 'pointer-events-none');
+    });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePhotoLightbox() {
+    photoLightbox.classList.add('opacity-0', 'pointer-events-none');
+    setTimeout(() => photoLightbox.classList.add('hidden'), 300);
+    document.body.style.overflow = '';
+  }
+
+  function updatePhotoLightbox() {
+    photoLbImg.src = currentSeriesImages[currentImageIndex];
+    photoLbImg.style.transform = `scale(${zoom})`;
+    photoLbCounter.textContent = `${currentImageIndex + 1} / ${currentSeriesImages.length}`;
+    photoLbTitle.textContent = seriesModalTitle.textContent;
+  }
+
+  function nextImage() {
+    currentImageIndex = (currentImageIndex + 1) % currentSeriesImages.length;
+    zoom = 1;
+    updatePhotoLightbox();
+  }
+
+  function prevImage() {
+    currentImageIndex = (currentImageIndex - 1 + currentSeriesImages.length) % currentSeriesImages.length;
+    zoom = 1;
+    updatePhotoLightbox();
+  }
+
+  // 初始化
+  function init() {
+    // 点击系列卡片
+    seriesCards.forEach(card => {
+      card.addEventListener('click', () => openSeriesModal(card.dataset.name));
+    });
+
+    // 点击空白处关闭
+    seriesModal.addEventListener('click', (e) => { if (e.target === seriesModal) closeSeriesModal(); });
+    photoLightbox.addEventListener('click', (e) => { if (e.target === photoLightbox) closePhotoLightbox(); });
+
+    // 切换照片
+    photoLbPrev.addEventListener('click', prevImage);
+    photoLbNext.addEventListener('click', nextImage);
+
+    // 缩放
+    photoLbZoomIn.addEventListener('click', () => { zoom = Math.min(zoom * 1.5, 4); updatePhotoLightbox(); });
+    photoLbZoomOut.addEventListener('click', () => { zoom = Math.max(zoom / 1.5, 0.5); updatePhotoLightbox(); });
+    photoLbFit.addEventListener('click', () => { zoom = 1; updatePhotoLightbox(); });
+
+    // 键盘导航
+    document.addEventListener('keydown', (e) => {
+      // 如果 Photo Lightbox 开着
+      if (!photoLightbox.classList.contains('hidden')) {
+        if (e.key === 'Escape') closePhotoLightbox();
+        if (e.key === 'ArrowLeft') prevImage();
+        if (e.key === 'ArrowRight') nextImage();
+        return;
+      }
+      // 如果 Series Modal 开着
+      if (!seriesModal.classList.contains('hidden')) {
+        if (e.key === 'Escape') closeSeriesModal();
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          closeSeriesModal();
+        }
+        if (e.key === 'ArrowLeft') {
+          closeSeriesModal();
+        }
+      }
+    });
+
+    // 排序功能
+
+    // Grid 排序功能
+    const gridSortBtns = document.querySelectorAll('.grid-sort-btn');
+    const searchInput = document.getElementById('series-search');
+
+    function updateGridSortButtons(activeSort) {
+      gridSortBtns.forEach(btn => {
+        if (btn.dataset.sort === activeSort) {
+          btn.classList.add('text-white', 'underline');
+          btn.classList.remove('text-neutral-400');
+        } else {
+          btn.classList.remove('text-white', 'underline');
+          btn.classList.add('text-neutral-400');
+        }
+      });
+    }
+
+    function sortGridCards(method) {
+      const cards = Array.from(document.querySelectorAll('.series-card'));
+      if (cards.length === 0) return;
+
+      if (method === 'az') {
+        cards.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name, 'zh-CN'));
+      } else if (method === 'za') {
+        cards.sort((a, b) => b.dataset.name.localeCompare(a.dataset.name, 'zh-CN'));
+      } else if (method === 'random') {
+        for (let i = cards.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+      }
+
+      const container = cards[0]?.parentElement;
+      if (container) {
+        cards.forEach(card => container.appendChild(card));
+      }
+    }
+
+    gridSortBtns.forEach(btn => {
+      btn.addEventListener('click', () => sortGridCards(btn.dataset.sort));
+    });
+
+    // 搜索功能
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const grid = document.querySelector('.grid');
+        if (!grid) return;
+        const cards = Array.from(grid.querySelectorAll('.series-card'));
+        cards.forEach(card => {
+          const name = card.dataset.name?.toLowerCase() || '';
+          if (query === '' || name.includes(query)) {
+            card.classList.remove('hidden');
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+      });
+    }
+  }
+
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('DOMContentLoaded', init);
+</script>

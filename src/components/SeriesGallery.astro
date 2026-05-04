@@ -1,0 +1,217 @@
+---
+// SeriesGallery.astro - 两级 Lightbox: 封面列表 → 瀑布流 → 单张照片
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  folder: 'portraits' | 'landscapes' | 'street';
+}
+
+const { folder } = Astro.props;
+
+// 读取各文件夹图片
+const portraitsGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/portraits/**/*.{jpg,jpeg,png,webp,avif}', { eager: true });
+const landscapesGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/landscapes/**/*.{jpg,jpeg,png,webp,avif}', { eager: true });
+const streetGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/street/**/*.{jpg,jpeg,png,webp,avif}', { eager: true });
+
+const globMap = { portraits: portraitsGlob, landscapes: landscapesGlob, street: streetGlob };
+const imageFiles = globMap[folder];
+
+// 按文件夹分组
+const seriesMap = new Map<string, ImageMetadata[]>();
+Object.entries(imageFiles)
+  .filter(([path]) => !path.includes('.DS_Store') && !path.startsWith('.'))
+  .forEach(([path, image]) => {
+    const parts = path.split('/');
+    const seriesName = parts.length > 4 ? parts[parts.length - 2] : parts[parts.length - 1]?.replace(/\.[^.]+$/, '') || 'Untitled';
+    if (!seriesMap.has(seriesName)) seriesMap.set(seriesName, []);
+    seriesMap.get(seriesName)!.push(image.default);
+  });
+
+const series = Array.from(seriesMap.entries())
+  .map(([name, photos]) => ({ name, cover: photos[0], photos }))
+  .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+
+// 构建照片数据供JS使用
+const photosBySeries = series.reduce((acc, s) => {
+  acc[s.name] = s.photos.map(p => p.src);
+  return acc;
+}, {} as Record<string, string[]>);
+---
+
+<!-- Series Grid - 封面列表，保持原始比例 -->
+<div id="series-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+  {series.map((s, idx) => (
+    <div class="series-card cursor-pointer group" data-name={s.name}>
+      <div class="cover-wrap bg-neutral-100 dark:bg-neutral-800 overflow-hidden relative">
+        <img src={s.cover.src} alt={s.name} class="w-full h-auto" />
+        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
+          <div class="opacity-0 group-hover:opacity-100 text-center">
+            <p class="subheading text-white">{s.photos.length} photos</p>
+            <p class="font-display text-2xl text-white mt-1">{s.name}</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4">
+        <p class="font-display text-xl">{s.name}</p>
+        <p class="subheading text-neutral-500">{s.photos.length} 张</p>
+      </div>
+    </div>
+  ))}
+</div>
+
+<!-- Level 1: Series Photos Modal - 瀑布流 -->
+<div id="series-modal" class="fixed inset-0 z-[100] hidden bg-white dark:bg-neutral-950 overflow-auto" style="display: none;">
+  <button id="series-modal-close" class="fixed top-4 right-4 z-[110] p-3 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
+  </button>
+  <div class="pt-16 pb-8 px-4 md:px-8">
+    <h2 id="series-modal-title" class="font-display text-3xl mb-2"></h2>
+    <p id="series-modal-count" class="subheading text-neutral-500 mb-8"></p>
+    <div id="series-photos-grid" class="columns-1 md:columns-2 lg:columns-3 gap-4">
+    </div>
+  </div>
+</div>
+
+<!-- Level 2: Single Photo Lightbox -->
+<div id="photo-lightbox" class="fixed inset-0 z-[200] hidden bg-black/95" style="display: none;">
+  <button id="photo-lb-close" class="fixed top-4 right-4 z-[210] text-white/70 hover:text-white p-3">
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
+  </button>
+  <div class="fixed top-4 left-4 z-[210] text-white">
+    <p id="photo-lb-title" class="subheading opacity-70"></p>
+    <p id="photo-lb-counter" class="mt-1"></p>
+  </div>
+  <div class="fixed inset-16 flex items-center justify-center">
+    <img id="photo-lb-img" class="max-w-full max-h-full object-contain" />
+  </div>
+  <button id="photo-lb-prev" class="fixed left-4 top-1/2 -translate-y-1/2 z-[210] text-white/50 hover:text-white p-2">
+    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <button id="photo-lb-next" class="fixed right-4 top-1/2 -translate-y-1/2 z-[210] text-white/50 hover:text-white p-2">
+    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5l7 7-7 7"/></svg>
+  </button>
+  <div class="fixed bottom-6 right-6 z-[210] flex gap-3">
+    <button id="photo-lb-zoom-out" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/></svg></button>
+    <button id="photo-lb-zoom-in" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg></button>
+    <button id="photo-lb-fit" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg></button>
+  </div>
+</div>
+
+<!-- Inject data -->
+<script define:vars={{ photosBySeries }}>window.SERIES_DATA = photosBySeries;</script>
+
+<script>
+// Series Data from window
+const getSeriesData = () => window.SERIES_DATA || {};
+
+const seriesGrid = document.getElementById('series-grid');
+const seriesModal = document.getElementById('series-modal');
+const seriesModalTitle = document.getElementById('series-modal-title');
+const seriesModalCount = document.getElementById('series-modal-count');
+const seriesPhotosGrid = document.getElementById('series-photos-grid');
+const photoLightbox = document.getElementById('photo-lightbox');
+const photoLbImg = document.getElementById('photo-lb-img');
+const photoLbCounter = document.getElementById('photo-lb-counter');
+
+let currentPhotos = [];
+let currentIndex = 0;
+let zoom = 1;
+
+// Open Series Modal (Level 1) - 瀑布流
+function openSeriesModal(seriesName) {
+  const photos = getSeriesData()[seriesName] || [];
+  if (!photos.length) return;
+
+  currentPhotos = photos;
+  seriesModalTitle.textContent = seriesName;
+  seriesModalCount.textContent = photos.length + ' 张照片';
+
+  // Build masonry grid
+  seriesPhotosGrid.innerHTML = '';
+  photos.forEach((src, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'photo-item break-inside-avoid mb-4 cursor-pointer';
+    wrap.innerHTML = `<img src="${src}" class="w-full h-auto object-contain" loading="lazy" />`;
+    wrap.addEventListener('click', () => openPhotoLightbox(i));
+    seriesPhotosGrid.appendChild(wrap);
+  });
+
+  seriesModal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSeriesModal() {
+  seriesModal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// Open Single Photo Lightbox (Level 2)
+function openPhotoLightbox(index) {
+  currentIndex = index;
+  zoom = 1;
+  updatePhotoLightbox();
+  photoLightbox.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closePhotoLightbox() {
+  photoLightbox.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function updatePhotoLightbox() {
+  photoLbImg.src = currentPhotos[currentIndex];
+  photoLbImg.style.transform = 'scale(' + zoom + ')';
+  photoLbCounter.textContent = (currentIndex + 1) + ' / ' + currentPhotos.length;
+}
+
+function prevPhoto() {
+  currentIndex = (currentIndex - 1 + currentPhotos.length) % currentPhotos.length;
+  zoom = 1;
+  updatePhotoLightbox();
+}
+
+function nextPhoto() {
+  currentIndex = (currentIndex + 1) % currentPhotos.length;
+  zoom = 1;
+  updatePhotoLightbox();
+}
+
+document.addEventListener('astro:page-load', function() {
+  // Click series card
+  document.querySelectorAll('.series-card').forEach(card => {
+    card.addEventListener('click', () => openSeriesModal(card.dataset.name));
+  });
+
+  // Close series modal
+  document.getElementById('series-modal-close').addEventListener('click', closeSeriesModal);
+  seriesModal.addEventListener('click', (e) => {
+    if (e.target === seriesModal) closeSeriesModal();
+  });
+
+  // Photo lightbox controls
+  document.getElementById('photo-lb-close').addEventListener('click', closePhotoLightbox);
+  document.getElementById('photo-lb-prev').addEventListener('click', prevPhoto);
+  document.getElementById('photo-lb-next').addEventListener('click', nextPhoto);
+  document.getElementById('photo-lb-zoom-in').addEventListener('click', () => { zoom = Math.min(zoom * 1.5, 4); updatePhotoLightbox(); });
+  document.getElementById('photo-lb-zoom-out').addEventListener('click', () => { zoom = Math.max(zoom / 1.5, 0.5); updatePhotoLightbox(); });
+  document.getElementById('photo-lb-fit').addEventListener('click', () => { zoom = 1; updatePhotoLightbox(); });
+
+  photoLightbox.addEventListener('click', (e) => {
+    if (e.target === photoLightbox) closePhotoLightbox();
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (photoLightbox.style.display !== 'none') {
+      if (e.key === 'Escape') closePhotoLightbox();
+      if (e.key === 'ArrowLeft') prevPhoto();
+      if (e.key === 'ArrowRight') nextPhoto();
+    }
+    if (seriesModal.style.display !== 'none') {
+      if (e.key === 'Escape') closeSeriesModal();
+    }
+  });
+});
+</script>

@@ -1,0 +1,147 @@
+---
+// PhotoGallery.astro - 自动读取照片并渲染画廊
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  folder: 'portraits' | 'landscapes' | 'street';
+  layout?: 'editorial' | 'masonry' | 'fullbleed';
+}
+
+const { folder, layout = 'editorial' } = Astro.props;
+
+// 静态读取各文件夹图片（支持子文件夹）
+const portraitsGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/portraits/**/*.{jpg,jpeg,png,webp,avif}', { eager: true });
+const landscapesGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/landscapes/**/*.{jpg,jpeg,png,webp,avif}', { eager: true });
+const streetGlob = import.meta.glob<{ default: ImageMetadata }>('/src/assets/street/**/*.{jpg,jpeg,png,webp,avif}', { eager: true });
+
+const globMap = {
+  portraits: portraitsGlob,
+  landscapes: landscapesGlob,
+  street: streetGlob,
+};
+
+const imageFiles = globMap[folder];
+const images = Object.entries(imageFiles)
+  .filter(([path]) => !path.includes('.DS_Store') && !path.startsWith('.'))
+  .map(([path, image]) => {
+  // 支持子文件夹：从路径中提取文件夹名作为标题
+  const parts = path.split('/');
+  const alt = parts.length > 4 ? parts[parts.length - 2] : parts.pop()?.replace(/\.[^.]+$/, '') || '';
+  return {
+    src: image.default,
+    alt,
+    filename: alt,
+  };
+});
+
+// 排序保证一致性
+images.sort((a, b) => a.filename.localeCompare(b.filename));
+---
+
+{layout === 'masonry' && (
+  <div class="columns-1 sm:columns-2 lg:columns-3 gap-3 md:gap-4">
+    {images.map((img, index) => (
+      <div class="break-inside-avoid mb-3 md:mb-4 group cursor-pointer">
+        <div class="relative overflow-hidden">
+          <Image
+            src={img.src}
+            alt={img.alt}
+            width={800}
+            quality={85}
+            format="webp"
+            class={`w-full h-auto ${folder === 'street' ? 'grayscale group-hover:grayscale-0' : ''} transition-all duration-700`}
+          />
+        </div>
+        <div class="mt-2 opacity-60 group-hover:opacity-100 transition-opacity">
+          <p class="subheading text-neutral-500">{img.alt}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+{layout === 'fullbleed' && (
+  <div class="w-full">
+    {images.map((img, index) => (
+      <section class="parallax-section relative w-full min-h-[80vh] overflow-hidden">
+        <div class="parallax-bg absolute inset-0 w-full h-[120%] -top-[10%]" data-speed="0.2">
+          <Image
+            src={img.src}
+            alt={img.alt}
+            width={1920}
+            quality={90}
+            format="webp"
+            class="w-full h-full object-cover"
+          />
+        </div>
+        <div class="relative z-10 h-[80vh] flex items-end pb-12 md:pb-16 px-6 md:px-12">
+          <div>
+            <p class="subheading text-neutral-300 mb-1">{img.alt}</p>
+          </div>
+        </div>
+      </section>
+    ))}
+  </div>
+)}
+
+{layout === 'editorial' && (
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-y-20 lg:gap-x-16">
+    {images.map((img, index) => {
+      const span = index % 5 === 0 ? 8 : index % 3 === 0 ? 5 : 4;
+      const offset = index % 2 === 1 && index % 5 !== 0 ? 32 : 0;
+      const hasDescription = index % 3 === 1;
+
+      return (
+        <div class={`lg:col-span-${span} ${offset ? `lg:pt-${offset}` : ''} group cursor-pointer`}>
+          <div class="aspect-[4/3] overflow-hidden">
+            <Image
+              src={img.src}
+              alt={img.alt}
+              width={1200}
+              quality={85}
+              format="webp"
+              class="w-full h-full object-cover transition-all duration-500 group-hover:opacity-80"
+            />
+          </div>
+          <div class="mt-4">
+            <p class="subheading text-neutral-500">{img.alt}</p>
+            {hasDescription && (
+              <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-2 max-w-[200px]">
+                Capturing light and moment
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
+
+<script>
+  // Parallax effect for fullbleed layout
+  document.addEventListener('astro:page-load', () => {
+    const sections = document.querySelectorAll('.parallax-section');
+    if (sections.length === 0) return;
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          sections.forEach((section) => {
+            const bg = section.querySelector('.parallax-bg') as HTMLElement;
+            if (!bg) return;
+            const speed = parseFloat(bg.getAttribute('data-speed') || '0.2');
+            const rect = section.getBoundingClientRect();
+            const scrolled = -rect.top * speed;
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+              bg.style.transform = `translateY(${scrolled}px)`;
+            }
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+  });
+</script>

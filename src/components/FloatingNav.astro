@@ -1,0 +1,202 @@
+---
+// FloatingNav.astro - 可拖拽悬浮微导航
+---
+
+<!-- Draggable Floating Nav -->
+<div id="float-nav" class="fixed z-[90] cursor-move" style="top: calc(100vh - 160px); right: 24px;">
+  <!-- Trigger Dot -->
+  <div id="float-dot" class="w-10 h-10 rounded-full bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center hover:bg-neutral-800 transition-colors">
+    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+    </svg>
+  </div>
+
+  <!-- Back Button -->
+  <div id="float-back" class="w-10 h-10 rounded-full bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center hover:bg-neutral-800 transition-colors mt-3">
+    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    </svg>
+  </div>
+
+  <!-- Vertical Panel -->
+  <div id="float-panel" class="absolute bottom-12 right-0 flex flex-col items-end gap-0.5 opacity-0 pointer-events-none transition-all duration-300 translate-y-2 bg-neutral-900/60 backdrop-blur-sm p-2 rounded-lg">
+    <button id="nav-top" class="nav-btn w-full text-right text-white text-xs tracking-widest py-2 px-3 rounded hover:bg-white/10 transition-colors">TO TOP</button>
+    <button id="nav-close" class="nav-btn w-full text-right text-white text-xs tracking-widest py-2 px-3 rounded hover:bg-white/10 transition-colors">CLOSE</button>
+    <div class="w-full h-px bg-white/20 my-1"></div>
+    <a href="/" class="nav-btn w-full text-right text-white text-xs tracking-widest py-2 px-3 rounded hover:bg-white/10 transition-colors">HOME</a>
+    <a href="/portraits" class="nav-btn w-full text-right text-white text-xs tracking-widest py-2 px-3 rounded hover:bg-white/10 transition-colors">PORTRAITS</a>
+    <a href="/landscapes" class="nav-btn w-full text-right text-white text-xs tracking-widest py-2 px-3 rounded hover:bg-white/10 transition-colors">LANDSCAPES</a>
+    <a href="/street" class="nav-btn w-full text-right text-white text-xs tracking-widest py-2 px-3 rounded hover:bg-white/10 transition-colors">STREET</a>
+  </div>
+</div>
+
+<script>
+(function() {
+  var navInitialized = false;
+
+  function initFloatingNav() {
+    if (navInitialized) return;
+
+    var floatNav = document.getElementById('float-nav');
+    var floatDot = document.getElementById('float-dot');
+    var floatPanel = document.getElementById('float-panel');
+    var navTop = document.getElementById('nav-top');
+    var navClose = document.getElementById('nav-close');
+    var floatBackEl = document.getElementById('float-back');
+
+    if (!floatNav || !floatDot) return;
+
+    navInitialized = true;
+    console.log('[FloatingNav] Initialized');
+
+    function getCurrentModals() {
+      return {
+        seriesModal: document.getElementById('series-modal'),
+        photoLightbox: document.getElementById('photo-lightbox'),
+        menuOverlay: document.getElementById('menu-overlay')
+      };
+    }
+
+    var isDragging = false;
+    var offsetX = 0, offsetY = 0;
+
+    // Drag from dot
+    floatDot.addEventListener('mousedown', function(e) {
+      isDragging = true;
+      var rect = floatNav.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      floatNav.style.cursor = 'grabbing';
+      floatNav.dataset.dragged = 'true';
+    });
+
+    // Back button drag
+    if (floatBackEl) {
+      floatBackEl.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        var rect = floatNav.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        floatNav.style.cursor = 'grabbing';
+        floatNav.dataset.dragged = 'true';
+      });
+    }
+
+    document.addEventListener('mousemove', function(e) {
+      if (isDragging) {
+        floatNav.style.left = (e.clientX - offsetX) + 'px';
+        floatNav.style.top = (e.clientY - offsetY) + 'px';
+        floatNav.style.bottom = 'auto';
+        floatNav.style.right = 'auto';
+      }
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (isDragging) {
+        isDragging = false;
+        floatNav.style.cursor = 'move';
+      }
+    });
+
+    // Panel hover
+    var showTimer = null;
+    var hideTimer = null;
+
+    function showPanel() {
+      if (hideTimer) clearTimeout(hideTimer);
+      showTimer = setTimeout(function() {
+        floatPanel.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+      }, 500);
+    }
+
+    function hidePanel() {
+      if (showTimer) clearTimeout(showTimer);
+      hideTimer = setTimeout(function() {
+        floatPanel.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+      }, 500);
+    }
+
+    floatDot.addEventListener('mouseenter', showPanel);
+    floatNav.addEventListener('mouseleave', hidePanel);
+    floatPanel.addEventListener('mouseenter', function() { if (hideTimer) clearTimeout(hideTimer); });
+    floatPanel.addEventListener('mouseleave', hidePanel);
+
+    // Close modal
+    function closeModal() {
+      var modals = getCurrentModals();
+      if (modals.photoLightbox && !modals.photoLightbox.classList.contains('hidden')) {
+        modals.photoLightbox.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(function() { modals.photoLightbox.classList.add('hidden'); }, 300);
+        document.body.style.overflow = '';
+        return true;
+      }
+      if (modals.seriesModal && !modals.seriesModal.classList.contains('hidden')) {
+        modals.seriesModal.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(function() { modals.seriesModal.classList.add('hidden'); }, 300);
+        document.body.style.overflow = '';
+        return true;
+      }
+      return false;
+    }
+
+    // Dot click
+    floatDot.addEventListener('click', function() {
+      var modals = getCurrentModals();
+      if (modals.seriesModal && !modals.seriesModal.classList.contains('hidden')) {
+        var content = modals.seriesModal.querySelector('.overflow-auto');
+        if (content) content.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+
+    // Back button click
+    if (floatBackEl) {
+      floatBackEl.addEventListener('click', function() {
+        var modals = getCurrentModals();
+        if (modals.photoLightbox && !modals.photoLightbox.classList.contains('hidden')) {
+          modals.photoLightbox.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(function() { modals.photoLightbox.classList.add('hidden'); }, 300);
+          document.body.style.overflow = '';
+        } else if (modals.seriesModal && !modals.seriesModal.classList.contains('hidden')) {
+          modals.seriesModal.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(function() { modals.seriesModal.classList.add('hidden'); }, 300);
+          document.body.style.overflow = '';
+        } else {
+          window.history.back();
+        }
+      });
+    }
+
+    // TO TOP
+    if (navTop) {
+      navTop.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    // CLOSE
+    if (navClose) {
+      navClose.addEventListener('click', closeModal);
+    }
+
+    // Keyboard
+    document.addEventListener('keydown', function(e) {
+      var modals = getCurrentModals();
+      if (e.key === 'Escape') closeModal();
+      if (modals.photoLightbox && !modals.photoLightbox.classList.contains('hidden')) {
+        if (e.key === 'ArrowLeft') document.getElementById('photo-lb-prev')?.click();
+        if (e.key === 'ArrowRight') document.getElementById('photo-lb-next')?.click();
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFloatingNav);
+  } else {
+    initFloatingNav();
+  }
+
+  document.addEventListener('astro:page-load', initFloatingNav);
+})();
+</script>

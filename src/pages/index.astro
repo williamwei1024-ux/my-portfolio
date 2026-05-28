@@ -31,22 +31,19 @@ const randomBg = images.length > 0 ? images[Math.floor(Math.random() * images.le
     <div class="absolute inset-0 bg-black/60 backdrop-blur-3xl z-10"></div>
 
     <!-- Layer 3: Content -->
-    <div class="relative z-20 flex flex-col items-center justify-center min-h-screen w-full px-6">
+    <div class="relative z-20 flex flex-col items-center justify-center min-h-screen w-full px-4 sm:px-6">
       <div class="text-center">
-        <p class="subheading text-neutral-400 mb-4">Photography Portfolio</p>
-        <h1 class="font-display text-6xl md:text-8xl lg:text-9xl font-medium leading-[0.9] mb-8 text-white">
+        <p class="subheading text-neutral-400 mb-3 sm:mb-4">Photography Portfolio</p>
+        <h1 class="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-medium leading-[0.85] sm:leading-[0.9] mb-6 sm:mb-8 text-white">
           LIYUAN WEI
         </h1>
-        <p class="text-lg md:text-xl text-neutral-300 max-w-sm mx-auto font-light leading-relaxed mb-12">
-          {/* Portraits & Landscape description removed */}
-        </p>
 
         <!-- Gallery Links -->
-        <div class="flex flex-col md:flex-row gap-8 md:gap-12 justify-center">
+        <div class="flex flex-col sm:flex-row gap-4 sm:gap-8 md:gap-12 justify-center">
           {galleries.map((gallery) => (
             <a href={gallery.href} class="group">
-              <span class="subheading block mb-2 text-neutral-300">{gallery.title}</span>
-              <span class="text-sm text-neutral-500 block group-hover:opacity-60 transition-opacity">
+              <span class="subheading block mb-1 sm:mb-2 text-neutral-300">{gallery.title}</span>
+              <span class="text-xs sm:text-sm text-neutral-500 block group-hover:opacity-60 transition-opacity">
                 {gallery.description}
               </span>
             </a>
@@ -57,10 +54,10 @@ const randomBg = images.length > 0 ? images[Math.floor(Math.random() * images.le
   </main>
 
   <!-- Footer -->
-  <footer class="px-6 lg:px-20 py-16 border-t border-white/10">
-    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+  <footer class="px-6 lg:px-20 py-10 sm:py-16 border-t border-white/10">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6">
       <p class="subheading text-neutral-500">&copy; 2026 LIYUAN WEI</p>
-      <div class="flex gap-8">
+      <div class="flex gap-6 sm:gap-8">
         <a href="#" class="subheading text-neutral-500 hover:text-white transition-colors">Instagram</a>
         <a href="#" class="subheading text-neutral-500 hover:text-white transition-colors">Email</a>
       </div>

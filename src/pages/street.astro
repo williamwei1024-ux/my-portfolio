@@ -30,17 +30,17 @@ const randomHeroSrc = allHeroImages[Math.floor(Math.random() * allHeroImages.len
 
 <Layout title="Street | LIYUAN WEI">
   <!-- Hero -->
-  <section class="min-h-screen flex flex-col lg:flex-row items-center justify-center px-6 lg:px-20 pt-20">
-    <div class="lg:w-1/2 flex flex-col justify-center">
-      <p class="subheading mb-4 text-neutral-400">LIYUAN WEI</p>
-      <h1 class="font-display text-4xl md:text-6xl lg:text-7xl font-medium leading-[0.9] mb-8 text-white">STREET</h1>
-      <p class="text-lg md:text-xl text-neutral-400 max-w-sm font-light leading-relaxed">
+  <section class="min-h-screen flex flex-col lg:flex-row items-center justify-center px-4 sm:px-6 lg:px-20 pt-16 sm:pt-20">
+    <div class="lg:w-1/2 flex flex-col justify-center order-2 lg:order-1">
+      <p class="subheading mb-3 sm:mb-4 text-neutral-400">LIYUAN WEI</p>
+      <h1 class="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-medium leading-[0.9] mb-6 sm:mb-8 text-white">STREET</h1>
+      <p class="text-base sm:text-lg md:text-xl text-neutral-400 max-w-sm font-light leading-relaxed">
         Capturing life and moments
       </p>
     </div>
-    <div class="lg:w-1/2 mt-12 lg:mt-0 lg:pl-24">
+    <div class="lg:w-1/2 mt-8 sm:mt-12 lg:mt-0 lg:pl-12 xl:pl-24 order-1 lg:order-2">
       <!-- Glassmorphism Square Container -->
-      <div class="relative w-80 sm:w-96 md:w-96 lg:w-[28rem] xl:w-[32rem] aspect-square overflow-hidden bg-transparent">
+      <div class="w-64 sm:w-80 md:w-96 lg:w-[28rem] xl:w-[32rem] aspect-square mx-auto lg:mx-0 overflow-hidden bg-transparent">
         <!-- Layer 1: Blurred Background -->
         <img
           src={randomHeroSrc}
@@ -64,31 +64,31 @@ const randomHeroSrc = allHeroImages[Math.floor(Math.random() * allHeroImages.len
   </section>
 
   <!-- Series Grid -->
-  <section id="works" class="px-4 md:px-8 lg:px-20 py-24 lg:py-40">
-    <div class="mb-16 lg:mb-24">
+  <section id="works" class="px-3 sm:px-4 md:px-8 lg:px-20 py-16 lg:py-24">
+    <div class="mb-10 lg:mb-16">
       <p class="subheading text-neutral-400 mb-2">Selected Works</p>
-      <h2 class="font-display text-4xl md:text-5xl text-white">Street Series</h2>
+      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl text-white">Street Series</h2>
     </div>
 
     <!-- Sorting & Search Bar -->
-    <div class="flex justify-between items-center w-full py-4 mb-8 border-b border-white/10">
-      <div class="flex gap-6">
+    <div class="flex justify-between items-center w-full py-3 sm:py-4 mb-6 sm:mb-8 border-b border-white/10">
+      <div class="flex gap-4 sm:gap-6">
         <button class="grid-sort-btn text-[10px] tracking-[0.2em] uppercase text-neutral-400 hover:text-white transition-colors" data-sort="az">A-Z</button>
         <button class="grid-sort-btn text-[10px] tracking-[0.2em] uppercase text-neutral-400 hover:text-white transition-colors" data-sort="za">Z-A</button>
         <button class="grid-sort-btn text-[10px] tracking-[0.2em] uppercase text-neutral-400 hover:text-white transition-colors" data-sort="random">RANDOM</button>
       </div>
-      <input type="text" id="series-search" placeholder="SEARCH" class="bg-transparent border-0 border-b border-gray-600 focus:border-white text-white placeholder-gray-600 outline-none focus:ring-0 w-24 focus:w-48 transition-all duration-500 text-[10px] tracking-[0.2em]" />
+      <input type="text" id="series-search" placeholder="SEARCH" class="bg-transparent border-0 border-b border-gray-600 focus:border-white text-white placeholder-gray-600 outline-none focus:ring-0 w-20 sm:w-24 focus:w-32 sm:focus:w-48 transition-all duration-500 text-[10px] tracking-[0.2em]" />
     </div>
 
-    <div class="columns-1 sm:columns-2 lg:columns-3 gap-4 md:gap-6">
+    <div class="columns-2 sm:columns-2 lg:columns-3 gap-3 sm:gap-4 md:gap-6">
       {seriesList.map((s, idx) => (
-        <article class="series-card cursor-pointer group relative break-inside-avoid mb-4 md:mb-6" data-name={s.name} data-orientation={s.orientation}>
+        <article class="series-card cursor-pointer group relative break-inside-avoid mb-3 sm:mb-4 md:mb-6" data-name={s.name} data-orientation={s.orientation}>
           <div class="cover-wrap bg-neutral-800 overflow-hidden relative">
             <img src={s.coverSrc} alt={s.name} class="w-full h-auto object-cover" />
             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all flex items-center justify-center">
-              <div class="opacity-0 group-hover:opacity-100 text-center">
-                <p class="subheading text-white/80">{s.photos.length} photos</p>
-                <p class="font-display text-2xl text-white mt-1">{s.name}</p>
+              <div class="opacity-0 group-hover:opacity-100 text-center px-2">
+                <p class="subheading text-white/80 text-xs">{s.photos.length} photos</p>
+                <p class="font-display text-base sm:text-xl text-white mt-1">{s.name}</p>
               </div>
             </div>
           </div>
@@ -99,50 +99,53 @@ const randomHeroSrc = allHeroImages[Math.floor(Math.random() * allHeroImages.len
 
   <!-- Level 1: Series Modal (白底瀑布流) -->
   <div id="series-modal" class="fixed inset-0 z-40 hidden bg-white dark:bg-neutral-950 transition-opacity duration-300 opacity-0 pointer-events-none">
-    <div class="pt-24 pb-8 px-4 md:px-8 overflow-auto h-full">
-      <h2 id="series-modal-title" class="font-display text-3xl mb-2 text-neutral-900 dark:text-white"></h2>
+    <button id="series-modal-close" class="fixed top-4 right-4 z-50 p-3 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white touch-manipulation">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+    <div class="pt-20 pb-8 px-3 sm:px-4 md:px-8 overflow-auto h-full">
+      <h2 id="series-modal-title" class="font-display text-2xl sm:text-3xl mb-2 text-neutral-900 dark:text-white"></h2>
       <p id="series-modal-count" class="subheading text-neutral-500 mb-4"></p>
 
-      <div id="series-photos-grid" class="columns-1 sm:columns-2 lg:columns-3 gap-4"></div>
+      <div id="series-photos-grid" class="columns-2 sm:columns-2 lg:columns-3 gap-2 sm:gap-4"></div>
     </div>
   </div>
 
   <!-- Level 2: Photo Lightbox (黑底沉浸式) -->
   <div id="photo-lightbox" class="fixed inset-0 z-50 hidden bg-black transition-opacity duration-300 opacity-0 pointer-events-none">
-    <div class="fixed top-4 left-4 z-50 text-white">
-      <p id="photo-lb-title" class="subheading opacity-70"></p>
-      <p id="photo-lb-counter" class="mt-1"></p>
+    <button id="photo-lb-close" class="fixed top-3 sm:top-4 right-3 sm:right-4 z-[60] text-white bg-black/60 hover:bg-black/80 p-2 sm:p-3 rounded-lg backdrop-blur-sm transition-colors touch-manipulation">
+      <svg class="w-6 sm:w-8 h-6 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+    <div class="fixed top-3 sm:top-4 left-3 sm:left-4 z-[60] text-white">
+      <p id="photo-lb-title" class="subheading opacity-70 text-xs sm:text-sm"></p>
+      <p id="photo-lb-counter" class="mt-1 text-xs sm:text-sm"></p>
     </div>
-    <div class="fixed inset-16 flex items-center justify-center">
+    <div class="fixed inset-8 sm:inset-12 lg:inset-16 flex items-center justify-center">
       <img id="photo-lb-img" class="max-w-full max-h-full object-contain" />
     </div>
-    <!-- Photo metadata -->
-    <div class="fixed bottom-6 left-6 z-50">
-    </div>
-    <button id="photo-lb-prev" class="fixed left-4 top-1/2 -translate-y-1/2 z-50 text-white/50 hover:text-white p-2">
-      <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 19l-7-7 7-7" /></svg>
+    <button id="photo-lb-prev" class="fixed left-1 sm:left-2 md:left-4 top-1/2 -translate-y-1/2 z-[60] text-white bg-black/40 hover:bg-black/60 p-1 sm:p-2 rounded-lg backdrop-blur-sm transition-colors touch-manipulation">
+      <svg class="w-8 sm:w-10 md:w-12 h-8 sm:h-10 md:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 19l-7-7 7-7" /></svg>
     </button>
-    <button id="photo-lb-next" class="fixed right-4 top-1/2 -translate-y-1/2 z-50 text-white/50 hover:text-white p-2">
-      <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5l7 7-7 7" /></svg>
+    <button id="photo-lb-next" class="fixed right-1 sm:right-2 md:right-4 top-1/2 -translate-y-1/2 z-[60] text-white bg-black/40 hover:bg-black/60 p-1 sm:p-2 rounded-lg backdrop-blur-sm transition-colors touch-manipulation">
+      <svg class="w-8 sm:w-10 md:w-12 h-8 sm:h-10 md:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5l7 7-7 7" /></svg>
     </button>
-    <div class="fixed bottom-6 right-6 z-50 flex gap-3">
-      <button id="photo-lb-zoom-out" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg></button>
-      <button id="photo-lb-zoom-in" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" /></svg></button>
-      <button id="photo-lb-fit" class="text-white/50 hover:text-white p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg></button>
+    <div class="fixed bottom-3 sm:bottom-6 right-3 sm:right-6 z-[60] flex items-center gap-1 sm:gap-2 bg-black/60 backdrop-blur-sm px-2 sm:px-3 py-2 rounded-lg">
+      <button id="photo-lb-zoom-out" class="text-white hover:text-white p-1.5 sm:p-2 rounded hover:bg-white/20 transition-colors touch-manipulation"><svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" /></svg></button>
+      <button id="photo-lb-zoom-in" class="text-white hover:text-white p-1.5 sm:p-2 rounded hover:bg-white/20 transition-colors touch-manipulation"><svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" /></svg></button>
+      <button id="photo-lb-fit" class="text-white hover:text-white p-1.5 sm:p-2 rounded hover:bg-white/20 transition-colors touch-manipulation"><svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg></button>
     </div>
   </div>
 
   <!-- Navigation Links -->
-  <section class="px-6 py-16 flex gap-8 justify-center border-t border-neutral-800">
+  <section class="px-4 sm:px-6 py-12 sm:py-16 flex gap-6 sm:gap-8 justify-center border-t border-neutral-800">
     <a href="/portraits" class="subheading text-neutral-500 hover:text-white transition-colors">Portraits</a>
     <a href="/landscapes" class="subheading text-neutral-500 hover:text-white transition-colors">Landscapes</a>
   </section>
 
   <!-- Footer -->
-  <footer class="px-6 lg:px-20 py-16">
-    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+  <footer class="px-4 sm:px-6 lg:px-20 py-10 sm:py-16">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6">
       <p class="subheading text-neutral-500">&copy; 2026 LIYUAN WEI</p>
-      <div class="flex gap-8">
+      <div class="flex gap-6 sm:gap-8">
         <a href="#" class="subheading text-neutral-500 hover:text-white transition-colors">Instagram</a>
         <a href="#" class="subheading text-neutral-500 hover:text-white transition-colors">Email</a>
       </div>
